@@ -1,0 +1,83 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+  margin: 0;
+}
+
+#clock {
+  width: 300px;
+  height: 300px;
+  border: 5px solid #333;
+  border-radius: 50%;
+  position: relative;
+  background-color: white;
+}
+
+.hour-hand, .minute-hand, .second-hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  background-color: #333;
+}
+
+.hour-hand {
+  width: 6px;
+  height: 80px;
+  border-radius: 3px 3px 0 0;
+}
+
+.minute-hand {
+  width: 4px;
+  height: 100px;
+  border-radius: 2px 2px 0 0;
+}
+
+.second-hand {
+  width: 2px;
+  height: 120px;
+  background-color: red;
+  border-radius: 1px 1px 0 0;
+}
+
+.center-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #333;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Styles for clock numbers */
+#clock .number {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+#clock .number span {
+  display: inline-block;
+  transform-origin: center center;
+}
+
+/* Position numbers around the clock */
+.number:nth-child(1)  span { transform: rotate(30deg) translateY(-130px) rotate(-30deg); }
+.number:nth-child(2)  span { transform: rotate(60deg) translateY(-130px) rotate(-60deg); }
+.number:nth-child(3)  span { transform: rotate(90deg) translateY(-130px) rotate(-90deg); }
+.number:nth-child(4)  span { transform: rotate(120deg) translateY(-130px) rotate(-120deg); }
+.number:nth-child(5)  span { transform: rotate(150deg) translateY(-130px) rotate(-150deg); }
+.number:nth-child(6)  span { transform: rotate(180deg) translateY(-130px) rotate(-180deg); }
+.number:nth-child(7)  span { transform: rotate(210deg) translateY(-130px) rotate(-210deg); }
+.number:nth-child(8)  span { transform: rotate(240deg) translateY(-130px) rotate(-240deg); }
+.number:nth-child(9)  span { transform: rotate(270deg) translateY(-130px) rotate(-270deg); }
+.number:nth-child(10) span { transform: rotate(300deg) translateY(-130px) rotate(-300deg); }
+.number:nth-child(11) span { transform: rotate(330deg) translateY(-130px) rotate(-330deg); }
+.number:nth-child(12) span { transform: rotate(360deg) translateY(-130px) rotate(-360deg); }
