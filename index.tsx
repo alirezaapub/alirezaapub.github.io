@@ -34,6 +34,7 @@ declare global {
 }
 
 import { createApp, ref, defineComponent, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
+import IranMap from './src/components/IranMap.vue';
 import { EndSensitivity, GoogleGenAI, LiveServerMessage, Modality, Session, StartSensitivity } from '@google/genai';
 
 const INTERRUPT_SENSITIVITY_OPTIONS = [
@@ -1097,10 +1098,12 @@ const VISUAL_ACCESSORIES: Record<string, string[]> = {
 const ImagineComponent = defineComponent({
   components: {
     LiveAudioComponent,
-    CharacterImage
+    CharacterImage,
+    IranMap
   },
   setup() {
     const noAudioCount = ref<number>(0); // Add counter for no-audio events
+    const showMap = ref<boolean>(false);
     const characterGenerated = ref<boolean>(false);
     const playingResponse = ref<boolean>(false);
     const currentIndex = ref<number>(0);
@@ -2074,11 +2077,13 @@ Current time is ${new Date().toLocaleTimeString()}. Just say a very short introd
       isSmallScreen,
       isPlayerInDOM,
       forceShowBottomMessage,
+      showMap,
     };
   },
 
   template: `
     <div class="lg:w-[1000px] lg:mx-auto font-sans relative flex flex-col text-black items-center justify-center">
+    <IranMap v-if="showMap" @back="showMap = false" />
     <transition name="elasticBottom" appear>
       <div id="imagine" class="top-0 lg:top-10 absolute w-full flex lg:flex-col">
         <div class="pb-64 lg:pb-10 flex lg:flex-row flex-col">
@@ -2357,12 +2362,13 @@ Current time is ${new Date().toLocaleTimeString()}. Just say a very short introd
                 </div>
               </div>
             </div>
-            <div class="lg:w-2/5 lg:ml-[190px] w-full lg:text-2xl md:text-4xl text-2xl mt-10 flex justify-center items-center">
-              <div id="luckyButton" @click="onImFeelingLucky" class="lg:w-auto justify-center pr-5 lg:py-0 md:py-4 py-2 mt-10 lg:mt-0 lg:mx-auto button bg-blue rounded-2xl p-1 flex items-center cursor-pointer hover:bg-black/10">
+            <div class="lg:w-3/5 lg:ml-[190px] w-full lg:text-2xl md:text-4xl text-2xl mt-10 flex flex-col lg:flex-row justify-start items-center gap-x-4">
+              <div id="luckyButton" @click="onImFeelingLucky" class="lg:w-auto justify-center pr-5 lg:py-0 md:py-4 py-2 mt-2 lg:mt-0 button bg-blue rounded-2xl p-1 flex items-center cursor-pointer hover:bg-black/10">
               <span class="">
                 <img v-if="claymojiImages['dice']" :src="claymojiImages['dice']" class="lg:w-12 lg:h-12 w-20 h-20" />
               </span> 
               Random</div>
+              <button @click="showMap = true" class="button bg-green-500 text-white rounded-2xl p-3 flex items-center justify-center mt-4 lg:mt-0 hover:bg-green-600 transition-colors px-5 py-3 text-xl lg:text-2xl">Show Iran Map</button>
             </div>
           </div>
           <div v-if="!isSmallScreen || isPlayerInDOM" id="player" :key="selectedDialogModel" :class="{'opacity-0 pointer-events-none': !isPlayerVisible && isSmallScreen, 'mt-[100vh]': isSmallScreen}" class="lg:w-[40%] lg:shrink-0 lg:min-w-52 flex flex-col lg:ml-10 relative transition-opacity duration-300">
