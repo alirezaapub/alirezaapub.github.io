@@ -1,57 +1,311 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Tuner</title>
+    <title>ابزار جامع ارزیابی تولید</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Grandstander:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        button { margin-left: 10px; padding: 5px 10px; }
-        .counter-display { font-weight: bold; }
-    </style>
-
-    <!-- Import Map: Define aliases for our modules -->
-    <script type="importmap">
-{
-  "imports": {
-    "vue": "https://esm.sh/vue@3/dist/vue.esm-browser.js",
-    "@google/genai": "https://esm.sh/@google/genai@^0.9.0",
-    "react/": "https://esm.sh/react@^19.1.0/"
-  }
-}
-</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript">
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'purple': '#C24FF2',
-              'white': '#FFFFFF',
-              'green': '#5BB974',
-              'blue': '#DCEDF5'
-            },
-            fontFamily: {
-              sans: "'Grandstander', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-              mono: "'Roboto Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
-            }
-          }
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f8fafc;
         }
-      }
-    </script>
-
+        .phoneme-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .phoneme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .phoneme-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+            transform: translateY(-2px);
+        }
+        #results-container {
+            transition: all 0.3s ease-in-out;
+        }
+        .tab-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-btn.active {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+            color: #4338ca;
+        }
+        .content-card {
+            background: linear-gradient(145deg, #ffffff, #f9fafb);
+        }
+        .word-card .emoji {
+            font-size: 4rem; /* Larger emoji */
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        /* Print Styles */
+        @media print {
+            body { font-size: 12pt; }
+            #controls, footer { display: none !important; }
+            #results-container { box-shadow: none !important; border: 1px solid #ccc; }
+            .grid { display: block !important; }
+            .content-card, .word-card, .pair-card { page-break-inside: avoid; box-shadow: none !important; border: 1px solid #eee; margin-bottom: 1rem; }
+            #tabs { display: none !important; }
+            #word-display, #phrase-display, #minimal-pair-display { display: block !important; }
+        }
+    </style>
 </head>
-<body class="bg-black">
-    <div id="bg"></div>
-    <div id="app">
+<body class="bg-slate-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        
+        <div id="controls">
+            <header class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-indigo-700">ابزار جامع ارزیابی تولید</h1>
+                <p class="text-md text-gray-600 mt-2">برای مشاهده کلمات، عبارات و جفت‌های کمینه، روی هر واج کلیک کنید.</p>
+            </header>
+            <div id="phoneme-buttons" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 md:gap-4 mb-8"></div>
+        </div>
+
+        <div id="results-container" class="bg-white rounded-xl shadow-lg p-6 min-h-[300px] flex items-center justify-center">
+            <div id="placeholder" class="text-center text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+                <p class="mt-2 text-lg">محتوای مربوط به واج انتخاب شده در اینجا نمایش داده می‌شود.</p>
+            </div>
+            <div id="main-display" class="hidden w-full">
+                <h2 id="display-title" class="text-3xl font-bold text-center mb-6 text-indigo-600"></h2>
+                <div id="tabs" class="flex justify-center border-b mb-6 space-x-4 space-x-reverse"></div>
+                <div id="word-display" class="content-panel"></div>
+                <div id="phrase-display" class="content-panel hidden"></div>
+                <div id="minimal-pair-display" class="content-panel hidden"></div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <p>طراحی شده برای گفتاردرمانگران، علیرضا عباسی</p>
+        </footer>
     </div>
+
+    <script>
+        const phonemeData = {
+            'پ': { 
+                initial: { word: 'پسر', emoji: '👦' }, medial: { word: 'لامپ', emoji: '💡' }, final: { word: 'توپ', emoji: '⚽' }, 
+                phrase: 'پروانه پشت پنجره پرید.',
+                minimal_pairs: { 'ب (واکداری)': ['پارچ/بارچ', 'پول/بول'] } // Note: بارچ و بول کلمات واقعی نیستند و برای تمرین تضاد استفاده می‌شوند
+            },
+            'ب': { 
+                initial: { word: 'بادکنک', emoji: '🎈' }, medial: { word: 'صابون', emoji: '🧼' }, final: { word: 'سیب', emoji: '🍎' }, 
+                phrase: 'بابا باقالی پخته بود.',
+                minimal_pairs: { 'پ (بی‌واکی)': ['بال/پال', 'بار/پار'] }
+            },
+            'ت': { 
+                initial: { word: 'توپ', emoji: '⚽' }, medial: { word: 'کتاب', emoji: '📚' }, final: { word: 'دست', emoji: '🖐️' }, 
+                phrase: 'تابستان تمام توت‌ها تمام شد.',
+                minimal_pairs: { 'د (واکداری)': ['توت/دود', 'تاج/داغ', 'کارت/کارد'], 'ک (پیشین‌سازی)': ['تار/کار', 'تا/کا', 'تیک/کیک'] }
+            },
+            'د': { 
+                initial: { word: 'دست', emoji: '🖐️' }, medial: { word: 'مداد', emoji: '✏️' }, final: { word: 'زرد', emoji: '💛' }, 
+                phrase: 'داوود در بیابان دوید.',
+                minimal_pairs: { 'ت (بی‌واکی)': ['دود/توت', 'داغ/تاج', 'کارد/کارت'], 'گ (پیشین‌سازی)': ['دل/گل', 'دوش/گوش', 'دانه/گانه'] }
+            },
+            'ک': { 
+                initial: { word: 'کفش', emoji: '👟' }, medial: { word: 'عکس', emoji: '🖼️' }, final: { word: 'بادکنک', emoji: '🎈' }, 
+                phrase: 'کبوتر کاکلی کتاب می‌خواند.',
+                minimal_pairs: { 'ت (پیشین‌سازی)': ['کار/تار', 'کا/تا', 'کیک/تیک'], 'گ (واکداری)': ['کار/گار', 'کچ/گچ', 'کف/گپ'] }
+            },
+            'گ': { 
+                initial: { word: 'گاو', emoji: '🐄' }, medial: { word: 'انگور', emoji: '🍇' }, final: { word: 'سگ', emoji: '🐶' }, 
+                phrase: 'گرگ گرسنه دنبال گوسفند می‌گشت.',
+                minimal_pairs: { 'د (پیشین‌سازی)': ['گل/دل', 'گوش/دوش', 'گانه/دانه'], 'ک (بی‌واکی)': ['گار/کار', 'گچ/کچ', 'گپ/کف'] }
+            },
+            'ف': { 
+                initial: { word: 'فیل', emoji: '🐘' }, medial: { word: 'دفتر', emoji: '📓' }, final: { word: 'برف', emoji: '❄️' }, 
+                phrase: 'فرشته با تلفن حرف می‌زد.',
+                minimal_pairs: { 'پ (انسدادی‌شدن)': ['فرش/پرش', 'فال/پال', 'فیل/پیل'] }
+            },
+            'و': { 
+                initial: { word: 'ورزش', emoji: '🤸' }, medial: { word: 'دیوار', emoji: '🧱' }, final: { word: 'گاو', emoji: '🐄' }, 
+                phrase: 'وحید به ورزش والیبال رفت.',
+                minimal_pairs: { 'ب (انسدادی‌شدن)': ['وان/بان', 'وال/بال', 'ویلا/بیلا'] }
+            },
+            'س': { 
+                initial: { word: 'سیب', emoji: '🍎' }, medial: { word: 'پسر', emoji: '👦' }, final: { word: 'عکس', emoji: '🖼️' }, 
+                phrase: 'سبد سیب سرخ سنگین است.',
+                minimal_pairs: { 'ش (کامی‌شدن)': ['سال/شال', 'سیر/شیر', 'سوت/شوت'], 'ت (انسدادی‌شدن)': ['سوت/توت', 'سنگ/تنگ', 'سد/تُرد'], 'ز (واکداری)': ['سود/زود', 'سار/زار'] }
+            },
+            'ز': { 
+                initial: { word: 'زبان', emoji: '👅' }, medial: { word: 'سوزن', emoji: '🪡' }, final: { word: 'بز', emoji: '🐐' }, 
+                phrase: 'زنبور زرد روی زمین نشست.',
+                minimal_pairs: { 'س (بی‌واکی)': ['زود/سود', 'زار/سار'], 'د (انسدادی‌شدن)': ['زنگ/دنگ', 'زود/دود', 'گاز/داد'] }
+            },
+            'ش': { 
+                initial: { word: 'شیر', emoji: '🦁' }, medial: { word: 'قاشق', emoji: '🥄' }, final: { word: 'کفش', emoji: '👟' }, 
+                phrase: 'شیرین با شانه موهایش را شانه زد.',
+                minimal_pairs: { 'س (نوک‌زبانی‌شدن)': ['شال/سال', 'شیر/سیر', 'شوت/سوت'], 'چ (واک‌گرفتگی)': ['شان/چان', 'شانه/چانه'] }
+            },
+            'ژ': { 
+                initial: { word: 'ژاکت', emoji: '🧥' }, medial: { word: 'مژه', emoji: '👁️' }, final: { word: 'گاراژ', emoji: '🚗' }, 
+                phrase: 'منیژه ژاکت ژنده‌اش را پوشید.',
+                minimal_pairs: { 'ج (واک‌گرفتگی)': ['ژال/جال', 'ژاله/جاله'] }
+            },
+            'چ': { 
+                initial: { word: 'چتر', emoji: '☂️' }, medial: { word: 'قارچ', emoji: '🍄' }, final: { word: 'پارچ', emoji: '🏺' }, 
+                phrase: 'بچه مورچه را با چوب زد.',
+                minimal_pairs: { 'ش (سایشی‌شدن)': ['چان/شان', 'چانه/شانه'], 'ج (واکداری)': ['چاه/جاه', 'چاق/جاق'], 'ت (انسدادی‌شدن)': ['چای/تای', 'چاه/تا'] }
+            },
+            'ج': { 
+                initial: { word: 'جوراب', emoji: '🧦' }, medial: { word: 'پنجره', emoji: '🖼️' }, final: { word: 'کاج', emoji: '🌲' }, 
+                phrase: 'مجید جوراب جدیدش را پوشید.',
+                minimal_pairs: { 'ژ (سایشی‌شدن)': ['جال/ژال', 'جاله/ژاله'], 'چ (بی‌واکی)': ['جاه/چاه', 'جاق/چاق'], 'د (انسدادی‌شدن)': ['جام/دام', 'جور/دور'] }
+            },
+            'م': { 
+                initial: { word: 'ماهی', emoji: '🐟' }, medial: { word: 'چشم', emoji: '👁️' }, final: { word: 'شمع', emoji: '🕯️' }, 
+                phrase: 'مادر من ماست می‌خورد.',
+                minimal_pairs: { 'ب (دهانی‌شدن)': ['مام/باب', 'مور/بور'] }
+            },
+            'ن': { 
+                initial: { word: 'نان', emoji: '🍞' }, medial: { word: 'انگور', emoji: '🍇' }, final: { word: 'زبان', emoji: '👅' }, 
+                phrase: 'نگین نان و پنیر می‌خورد.',
+                minimal_pairs: { 'د (دهانی‌شدن)': ['نان/دان', 'نور/دور'] }
+            },
+            'ل': { 
+                initial: { word: 'لامپ', emoji: '💡' }, medial: { word: 'فیل', emoji: '🐘' }, final: { word: 'پول', emoji: '💰' }, 
+                phrase: 'لیلا لباس آبی پوشیده بود.',
+                minimal_pairs: { 'ر (جایگزینی)': ['لنگ/رنگ', 'بال/بار', 'سال/سار'], 'ی (روان‌شدگی)': ['لب/یب', 'لام/یام'] }
+            },
+            'ر': { 
+                initial: { word: 'رنگ', emoji: '🎨' }, medial: { word: 'خروس', emoji: '🐓' }, final: { word: 'ابر', emoji: '☁️' }, 
+                phrase: 'روباه زیر درخت فرار کرد.',
+                minimal_pairs: { 'ل (جایگزینی)': ['رنگ/لنگ', 'بار/بال', 'سار/سال'], 'ی (روان‌شدگی)': ['راه/یاه', 'راند/یاند'], 'و (روان‌شدگی)': ['رفت/وفت', 'رنگ/ونگ'] }
+            },
+            'خ': { 
+                initial: { word: 'خانه', emoji: '🏠' }, medial: { word: 'شاخه', emoji: '🌿' }, final: { word: 'یخ', emoji: '🧊' }, 
+                phrase: 'خرگوش خیار و هویج خورد.',
+                minimal_pairs: { 'ق (جایگزینی)': ['خار/قار', 'خان/قان'], 'ه (ساده‌شدن)': ['خال/هال', 'خاله/هاله'] }
+            },
+            'ق': { 
+                initial: { word: 'قاشق', emoji: '🥄' }, medial: { word: 'بشقاب', emoji: '🍽️' }, final: { word: '—', emoji: '' }, 
+                phrase: 'قوری روی اجاق قل‌قل می‌کرد.',
+                minimal_pairs: { 'خ (جایگزینی)': ['قار/خار', 'قان/خان'], 'گ (پیشین‌سازی)': ['قند/گند', 'قاز/گاز'] }
+            },
+            'ه': { 
+                initial: { word: 'هواپیما', emoji: '✈️' }, medial: { word: 'ماهی', emoji: '🐟' }, final: { word: 'کوه', emoji: '⛰️' }, 
+                phrase: 'هشت هفت‌تیر روی هفت‌سنگ بود.',
+                minimal_pairs: { 'حذف': ['ماه/ما', 'کوه/کو'] }
+            },
+            'ی': { 
+                initial: { word: 'یخ', emoji: '🧊' }, medial: { word: 'قیچی', emoji: '✂️' }, final: { word: 'چای', emoji: '🍵' }, 
+                phrase: 'یوسف یک یاکریم دید.',
+                minimal_pairs: { 'ل (جایگزینی)': ['یار/لار', 'یال/لال'] }
+            },
+            'خوشه': { 
+                initial: { word: 'اسب', emoji: '🐎' }, medial: { word: 'دفتر', emoji: '📓' }, final: { word: 'چشم', emoji: '👁️' }, 
+                phrase: 'دوچرخه‌سوار از روی پل پرید.',
+                minimal_pairs: {}
+            }
+        };
+
+        const phonemeButtonsContainer = document.getElementById('phoneme-buttons');
+        const placeholder = document.getElementById('placeholder');
+        const mainDisplay = document.getElementById('main-display');
+        const displayTitle = document.getElementById('display-title');
+        const tabsContainer = document.getElementById('tabs');
+        const wordDisplay = document.getElementById('word-display');
+        const phraseDisplay = document.getElementById('phrase-display');
+        const minimalPairDisplay = document.getElementById('minimal-pair-display');
+        let activeButton = null;
+
+        function switchTab(activeTab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-panel').forEach(panel => panel.classList.add('hidden'));
+            activeTab.classList.add('active');
+            document.querySelector(activeTab.dataset.target).classList.remove('hidden');
+        }
+
+        function displayResults(phoneme) {
+            const data = phonemeData[phoneme];
+            displayTitle.textContent = phoneme === 'خوشه' ? `نمونه‌های خوشه همخوانی` : `محتوا برای واج «${phoneme}»`;
+
+            // 1. Populate Words with Emojis
+            wordDisplay.innerHTML = '';
+            const positions = { initial: 'آغازی', medial: 'میانی', final: 'پایانی' };
+            let wordsContent = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">`;
+            for (const position in positions) {
+                if (data[position] && data[position].word !== '—') {
+                    const positionTitle = phoneme === 'خوشه' ? `مثال ${Object.keys(positions).indexOf(position) + 1}` : positions[position];
+                    wordsContent += `
+                        <div class="word-card flex flex-col items-center justify-center bg-slate-100 rounded-lg p-4 shadow-sm h-48">
+                            <div class="emoji">${data[position].emoji}</div>
+                            <p class="text-2xl font-bold mt-2">${data[position].word}</p>
+                            <h3 class="text-md font-semibold text-gray-500 mt-1">${positionTitle}</h3>
+                        </div>
+                    `;
+                }
+            }
+            wordsContent += `</div>`;
+            wordDisplay.innerHTML = wordsContent;
+
+            // 2. Populate Phrases
+            phraseDisplay.innerHTML = data.phrase ? `
+                <div class="content-card bg-indigo-50 rounded-lg p-6 text-center shadow-sm">
+                    <h3 class="text-lg font-bold text-indigo-800 mb-3">نمونه در عبارت</h3>
+                    <p class="text-xl md:text-2xl font-medium leading-relaxed">${data.phrase}</p>
+                </div>` : '';
+
+            // 3. Populate Minimal Pairs
+            minimalPairDisplay.innerHTML = '';
+            if (data.minimal_pairs && Object.keys(data.minimal_pairs).length > 0) {
+                let pairsContent = `<div class="content-card bg-green-50 rounded-lg p-6 shadow-sm">
+                                        <h3 class="text-lg font-bold text-green-800 mb-4 text-center">جفت‌های کمینه (Minimal Pairs)</h3>`;
+                for (const process in data.minimal_pairs) {
+                    pairsContent += `<div class="mb-4"><h4 class="font-semibold text-gray-600 text-center mb-2">${process}</h4>
+                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-center">`;
+                    data.minimal_pairs[process].forEach(pair => {
+                        const [word1, word2] = pair.split('/');
+                        pairsContent += `
+                            <div class="pair-card bg-white rounded-md p-3 border border-green-200">
+                                <p class="text-xl font-bold text-gray-700">
+                                    <span class="text-green-600">${word1}</span> / <span>${word2}</span>
+                                </p>
+                            </div>`;
+                    });
+                    pairsContent += `</div></div>`;
+                }
+                pairsContent += `</div>`;
+                minimalPairDisplay.innerHTML = pairsContent;
+            } else {
+                minimalPairDisplay.innerHTML = `<div class="text-center text-gray-400 p-8">برای این واج جفت کمینه رایج تعریف نشده است.</div>`;
+            }
+
+            // 4. Setup Tabs
+            tabsContainer.innerHTML = '';
+            let tabsContent = `<button data-target="#word-display" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent">کلمات</button>`;
+            if (data.phrase) tabsContent += `<button data-target="#phrase-display" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent">عبارت</button>`;
+            if (phoneme !== 'خوشه') tabsContent += `<button data-target="#minimal-pair-display" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent">جفت‌های کمینه</button>`;
+            tabsContainer.innerHTML = tabsContent;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn)));
+
+            placeholder.classList.add('hidden');
+            mainDisplay.classList.remove('hidden');
+            switchTab(tabsContainer.querySelector('.tab-btn'));
+        }
+
+        Object.keys(phonemeData).forEach(phoneme => {
+            const button = document.createElement('button');
+            button.textContent = phoneme;
+            button.className = 'phoneme-btn bg-white shadow-md rounded-lg p-4 text-xl md:text-2xl font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
+            if (phoneme === 'خوشه') button.classList.add('col-span-2', 'bg-teal-100', 'text-teal-800');
+            button.addEventListener('click', () => {
+                if (activeButton) activeButton.classList.remove('active');
+                button.classList.add('active');
+                activeButton = button;
+                displayResults(phoneme);
+            });
+            phonemeButtonsContainer.appendChild(button);
+        });
+    </script>
 </body>
-</html><link rel="stylesheet" href="index.css">
-<script src="index.tsx" type="module"></script>
-<link rel="stylesheet" href="index.css">
-<script src="index.tsx" type="module"></script>
-<link rel="stylesheet" href="index.css">
-<script src="index.tsx" type="module"></script>
+</html>
