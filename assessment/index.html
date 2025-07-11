@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ابزار ارزیابی بالینی زبان کودک (فاز نهایی)</title>
+    <title>ابزار نهایی ارزیابی و طرح درمان زبان کودک</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -67,7 +67,8 @@
         .assessment-section:first-child { border-top: none; padding-top: 0; margin-top: 0; }
         .assessment-section h3 { font-size: 1.3rem; margin-bottom: 20px; color: var(--accent-color); padding-bottom: 10px; border-bottom: 2px solid var(--accent-light); }
         
-        .question-group { margin-bottom: 25px; }
+        .question-group { margin-bottom: 25px; transition: opacity 0.5s; }
+        .question-group.hidden { display: none; }
         .question-group label { display: block; font-weight: 600; margin-bottom: 12px; }
         .question-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-card); font-family: var(--font-family); font-size: 1rem; cursor: pointer; }
 
@@ -75,7 +76,7 @@
         .main-button:hover { background-color: #2563eb; transform: translateY(-2px); }
         .center-container { text-align: center; padding: 20px 0; }
 
-        #results-container { display: none; }
+        #results-container, #prompt-generator-container { display: none; }
         .chart-container { padding: 15px; position: relative; margin: auto; min-height: 500px; width: 100%; }
         
         #recommendations-container { margin-top: 30px; }
@@ -91,6 +92,23 @@
         #download-btn { background-color: var(--success-color); }
         #download-btn:hover { background-color: #059669; }
 
+        #prompt-textarea {
+            width: 100%;
+            height: 300px;
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #f9fafb;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        #copy-prompt-btn { background-color: var(--warning-color); }
+        #copy-prompt-btn:hover { background-color: #ea580c; }
+
         @media (max-width: 768px) {
             .form-group { grid-template-columns: 1fr; }
             .chart-container { min-height: 350px; }
@@ -101,13 +119,12 @@
 
     <div class="container">
         <header class="main-header">
-            <h1>ابزار ارزیابی و طرح درمان زبان کودک</h1>
-            <p>بر اساس مدل Paul (2017). اطلاعات را وارد کنید تا پروفایل زبان، تحلیل و طرح درمان پیشنهادی تولید شود.</p>
+            <h1>ابزار جامع ارزیابی و طرح درمان زبان کودک</h1>
+            <p>بر اساس مدل‌های رشد زبان (Paul, 2017). اطلاعات را وارد کنید تا پروفایل زبان، تحلیل و طرح درمان پیشنهادی تولید شود.</p>
         </header>
 
         <main>
             <form id="assessment-form">
-                <!-- Demographic and Assessment sections from previous phase -->
                 <div class="card">
                     <div class="card-header"><h2>اطلاعات دموگرافیک</h2></div>
                     <div class="card-body">
@@ -119,7 +136,9 @@
                 </div>
                 <div id="assessment-container" class="card">
                      <div class="card-header"><h2>ارزیابی حوزه‌های زبان</h2></div>
-                     <div class="card-body"></div>
+                     <div class="card-body">
+                         <p class="text-secondary" style="text-align: center; margin-bottom: 20px;">سوالات زیر به صورت هوشمند بر اساس سن تقویمی وارد شده فیلتر می‌شوند.</p>
+                     </div>
                 </div>
                 <div class="center-container"><button type="submit" id="analyze-btn" class="main-button">تحلیل و ایجاد طرح درمان</button></div>
             </form>
@@ -132,11 +151,21 @@
                         <div class="chart-container"><canvas id="results-chart"></canvas></div>
                         <div id="recommendations-container">
                             <h3>اهداف درمانی و فعالیت‌های پیشنهادی</h3>
-                            <p class="text-secondary">بر اساس تحلیل، حوزه‌های زیر به عنوان اولویت درمانی شناسایی شده‌اند. برای مشاهده اهداف و فعالیت‌ها روی هر مورد کلیک کنید.</p>
+                            <p class="text-secondary">بر اساس تحلیل، حوزه‌هایی که بیشترین تاخیر را نسبت به سن تقویمی دارند به عنوان اولویت درمانی شناسایی شده‌اند. برای مشاهده اهداف و فعالیت‌ها روی هر مورد کلیک کنید.</p>
                             <div id="recommendation-accordion" class="recommendation-accordion"></div>
                         </div>
                      </div>
                 </div>
+                
+                <div id="prompt-generator-container" class="card">
+                    <div class="card-header"><h2>پرامپت پیشنهادی برای هوش مصنوعی</h2></div>
+                    <div class="card-body">
+                        <p class="text-secondary">پرامپت زیر را کپی کرده و در یک مدل زبان بزرگ (مانند ChatGPT یا Gemini) جای‌گذاری کنید تا یک طرح درمان جامع و مرحله‌بندی شده دریافت نمایید.</p>
+                        <textarea id="prompt-textarea" readonly></textarea>
+                        <button id="copy-prompt-btn" class="main-button">کپی کردن پرامپت</button>
+                    </div>
+                </div>
+
                 <div class="center-container"><button id="download-btn" class="main-button">دانلود گزارش (PDF)</button></div>
             </div>
         </main>
@@ -144,67 +173,69 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Data and rendering logic from previous phases...
+        const AGE_CEILING_BUFFER = 18; // Buffer to show questions for skills that might be slightly ahead.
+
+        // ==================================================================
+        //  پایگاه داده علمی جامع (مدل ۶ حوزه‌ای با گزینه عدم ظهور)
+        // ==================================================================
         const assessmentData = {
-            semantics: {
-                title: "معنی‌شناسی",
-                receptive: [{ id: "sem-rec-1", question: "درک واژگان", options: [{ text: "انتخاب کنید...", value: 0 },{ text: "کمتر از ۵۰ کلمه (۱۸ ماهگی)", value: 18 },{ text: "۲۰۰-۳۰۰ کلمه (۲۴ ماهگی)", value: 24 },{ text: "حدود ۹۰۰ کلمه (۳۶ ماهگی)", value: 36 },{ text: "بیش از ۱۵۰۰ کلمه (۴۸ ماهگی)", value: 48 }] }],
-                expressive: [{ id: "sem-exp-1", question: "گنجینه واژگان بیانی", options: [{ text: "انتخاب کنید...", value: 0 },{ text: "۱۰-۲۰ کلمه (۱۸ ماهگی)", value: 18 },{ text: "۵۰-۲۵۰ کلمه (۲۴ ماهگی)", value: 24 },{ text: "حدود ۱۰۰۰ کلمه (۳۶ ماهگی)", value: 36 },{ text: "بیش از ۲۰۰۰ کلمه (۴۸ ماهگی)", value: 48 }] }]
-            },
-            grammar: {
-                title: "دستور زبان",
-                receptive: [{ id: "gra-rec-1", question: "درک ساختار جمله", options: [{ text: "انتخاب کنید...", value: 0 },{ text: "جملات ساده (۲۴ ماهگی)", value: 24 },{ text: "ضمایر و جمع ساده (۳۶ ماهگی)", value: 36 },{ text: "جملات پیچیده (۴۸ ماهگی)", value: 48 }] }],
-                expressive: [{ id: "gra-exp-1", question: "طول و پیچیدگی جمله", options: [{ text: "انتخاب کنید...", value: 0 },{ text: "تک/دو کلمه‌ای (۲۴ ماهگی)", value: 24 },{ text: "سه تا چهار کلمه‌ای (۳۶ ماهگی)", value: 36 },{ text: "جملات کامل (۴۸ ماهگی)", value: 48 }] }]
-            },
-            pragmatics: {
-                title: "کاربردشناسی",
-                receptive: [{ id: "pra-rec-1", question: "درک قوانین اجتماعی", options: [{ text: "انتخاب کنید...", value: 0 },{ text: "نوبت‌گیری ساده (۲۴ ماهگی)", value: 24 },{ text: "درک قصد و نیت (۵۴ ماهگی)", value: 54 }] }],
-                expressive: [{ id: "pra-exp-1", question: "کارکردهای ارتباطی", options: [{ text: "انتخاب کنید...", value: 0 },{ text: "فقط درخواست و اعتراض (۲۴ ماهگی)", value: 24 },{ text: "اطلاع‌رسانی و پرسش (۳۶ ماهگی)", value: 36 },{ text: "روایت و توضیح (۴۸ ماهگی)", value: 48 }] }]
-            }
+            prelinguistic: { title: "ارتباطات پیش‌کلامی", receptive: [{ id: "pre-rec-1", question: "پاسخ به محرک‌های اجتماعی", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "توجه به چهره و صدا، لبخند اجتماعی (۰-۶ ماهگی)", value: 6 }, { text: "توجه مشترک، دنبال کردن نگاه (۶-۹ ماهگی)", value: 9 }, { text: "درک دستورات ساده با اشاره (۹-۱۲ ماهگی)", value: 12 }] }], expressive: [{ id: "pre-exp-1", question: "تولیدات آوایی و ژست", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "قان و قون و غان و غون (۴-۸ ماهگی)", value: 8 }, { text: "ژست و اشاره هدفمند (۹-۱۲ ماهگی)", value: 12 }, { text: "کلمات تک‌هجایی با اشاره (۱۲-۱۵ ماهگی)", value: 15 }] }] },
+            semantics: { title: "معنی‌شناسی", receptive: [{ id: "sem-rec-1", question: "درک واژگان و مفاهیم", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "درک نام اشیاء و اعضای بدن (۱۲-۱۸ ماهگی)", value: 18 }, { text: "درک دستورات دو مرحله‌ای، گنجینه درکی ~۳۰۰ کلمه (۱۸-۲۴ ماهگی)", value: 24 }, { text: "درک مفاهیم پایه فضایی، کیفی و ضمایر (۳۰-۳۶ ماهگی)", value: 36 }, { text: "درک مفاهیم زمانی و روابط معنایی (۴۲-۴۸ ماهگی)", value: 48 }] }], expressive: [{ id: "sem-exp-1", question: "استفاده از واژگان", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "استفاده از ۱۰-۵۰ کلمه (۱۸-۲۱ ماهگی)", value: 21 }, { text: "انفجار واژگان (۵۰-۲۵۰ کلمه) (۲۱-۲۴ ماهگی)", value: 24 }, { text: "استفاده از صفات و افعال، پاسخ به 'چی' و 'کجا' (۳۰-۳۶ ماهگی)", value: 36 }, { text: "پاسخ به 'چرا' با واژگان متنوع (۴۲-۴۸ ماهگی)", value: 48 }] }] },
+            grammar: { title: "دستور زبان", receptive: [{ id: "gra-rec-1", question: "درک ساختارهای دستوری", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "درک جملات ساده فاعل-فعل-مفعول (۲۴-۳۰ ماهگی)", value: 30 }, { text: "درک نشانه‌های صرفی (جمع، گذشته) (۳۰-۳۶ ماهگی)", value: 36 }, { text: "درک جملات پیچیده با حروف ربط (۴۲-۴۸ ماهگی)", value: 48 }] }], expressive: [{ id: "gra-exp-1", question: "طول و پیچیدگی جملات", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "جملات دو کلمه‌ای، MLU ~۱.۵-۲.۰ (۱۸-۲۴ ماهگی)", value: 24 }, { text: "جملات ۳-۴ کلمه‌ای، استفاده از صرف اولیه با خطا (۲۴-۳۶ ماهگی)", value: 36 }, { text: "جملات پیچیده با حروف ربط (۳۶-۴۸ ماهگی)", value: 48 }] }] },
+            phonology: { title: "واج‌شناسی", receptive: [{ id: "pho-rec-1", question: "آگاهی واج‌شناختی", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "علاقه به قافیه و ریتم (۲۴-۳۶ ماهگی)", value: 36 }, { text: "تشخیص کلمات هم‌قافیه (۴۲-۴۸ ماهگی)", value: 48 }, { text: "تشخیص صدای اول کلمات (۵۴-۶۰ ماهگی)", value: 60 }] }], expressive: [{ id: "pho-exp-1", question: "وضوح گفتار", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "حدود ۲۵-۵۰٪ واضح (۲۴ ماهگی)", value: 24 }, { text: "حدود ۷۵٪ واضح (۳۶ ماهگی)", value: 36 }, { text: "بیش از ۹۰٪ واضح (۴۸ ماهگی)", value: 48 }] }] },
+            pragmatics: { title: "کاربردشناسی", receptive: [{ id: "pra-rec-1", question: "درک قوانین اجتماعی زبان", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "درک نوبت‌گیری ساده (۲۴-۳۶ ماهگی)", value: 36 }, { text: "درک نیاز به تطبیق زبان با شنونده (۴۲-۴۸ ماهگی)", value: 48 }, { text: "درک زبان غیرمستقیم (۵۴-۶۰ ماهگی)", value: 60 }] }], expressive: [{ id: "pra-exp-1", question: "مهارت‌های مکالمه", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "حفظ موضوع برای ۱-۲ نوبت (۲۴-۳۰ ماهگی)", value: 30 }, { text: "حفظ موضوع و پرسش مرتبط (۳۶-۴۲ ماهگی)", value: 42 }, { text: "اصلاح شکست ارتباطی (۴۸-۵۴ ماهگی)", value: 54 }] }] },
+            discourse: { title: "گفتمان و روایت", receptive: [{ id: "dis-rec-1", question: "درک داستان", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "درک داستان‌های کوتاه و ساده (۳۰-۳۶ ماهگی)", value: 36 }, { text: "درک ارتباط علی و معلولی در داستان (۴۲-۴۸ ماهگی)", value: 48 }, { text: "درک مشکل و راه‌حل داستان (۵۴-۶۰ ماهگی)", value: 60 }] }], expressive: [{ id: "dis-exp-1", question: "توانایی داستان‌سرایی", options: [{ text: "انتخاب کنید...", value: "" }, { text: "مهارت هنوز ظهور نکرده است", value: 0 }, { text: "تعریف تجربیات به صورت زنجیره‌ای (۲۴-۳۶ ماهگی)", value: 36 }, { text: "تعریف داستان با ساختار ساده (۳۶-۴۸ ماهگی)", value: 48 }, { text: "تعریف داستان منسجم (۴۸-۶۰ ماهگی)", value: 60 }] }] }
         };
 
-        const recommendationsData = {
-            "semantics-receptive": {
-                ltg: "بهبود درک واژگان و مفاهیم متناسب با سن",
-                stgs: [
-                    { level: 24, goal: "افزایش درک واژگان به حدود ۳۰۰ کلمه", activities: ["کتاب‌خوانی تعاملی روزانه و اشاره به تصاویر و نام بردن آن‌ها.", "بازی 'این چیه؟' با اشیاء واقعی در محیط خانه.", "دسته‌بندی اسباب‌بازی‌ها بر اساس نوع (حیوانات، وسایل نقلیه)."] },
-                    { level: 36, goal: "افزایش درک مفاهیم پایه (فضایی، کیفی)", activities: ["بازی با لگو و استفاده از دستورات حاوی مفاهیم: 'لگوی قرمز رو بذار روی برج'.", "پیدا کردن اشیاء 'بزرگ' و 'کوچک' در محیط.", "دنبال کردن دستورات دو مرحله‌ای: 'توپ رو بردار و بنداز تو سبد'."] }
-                ]
-            },
-            "semantics-expressive": {
-                ltg: "افزایش گنجینه واژگان بیانی و استفاده از آن برای بیان نیازها",
-                stgs: [
-                    { level: 24, goal: "افزایش واژگان بیانی به بالای ۵۰ کلمه", activities: ["گسترش گفته‌های کودک: او می‌گوید 'ماشین'، شما بگویید 'بله، یک ماشین آبی سریع'.", "ایجاد موقعیت‌های انتخابی برای تشویق به کلام: 'شیر می‌خوای یا آب؟'.", "آواز خواندن و تکرار کلمات کلیدی در شعر."] },
-                    { level: 36, goal: "استفاده از کلمات برای توصیف و پرسش", activities: ["بازی 'من چی می‌بینم؟' برای توصیف اشیاء.", "تشویق به پرسیدن سوال 'این چیه؟' و دادن پاسخ‌های ساده.", "تعریف کردن کارهای روزمره حین انجام آن‌ها."] }
-                ]
-            },
-            "grammar-expressive": {
-                ltg: "افزایش طول و پیچیدگی دستوری جملات",
-                stgs: [
-                    { level: 24, goal: "ترکیب دو کلمه برای ساخت جملات ساده", activities: ["مدل‌سازی جملات دو کلمه‌ای حین بازی: 'بابا رفت'، 'نی‌نی خوابید'، 'توپ بده'.", "استفاده از کتاب‌های تصویری با جملات ساده و تکرار آن‌ها.", "ترغیب کودک به ترکیب فاعل و فعل برای توصیف تصاویر."] },
-                    { level: 36, goal: "استفاده از جملات ۳-۴ کلمه‌ای و نشانه‌های صرفی اولیه", activities: ["بازی با عروسک‌ها و مدل‌سازی جملات حاوی ضمیر و فعل: 'من می‌خورم'، 'تو می‌خوابی'.", "صحبت در مورد تصاویر با استفاده از جملات کامل.", "استفاده از نشانه‌های جمع در بازی: 'ببین، دو تا ماشین'."] }
-                ]
-            }
-            // More recommendations can be added for other domains...
+        const recommendationsData = { /* Data from previous phase... */
+            "semantics-receptive": { ltg: "بهبود درک واژگان و مفاهیم", stgs: [{ level: 24, goal: "افزایش درک واژگان به حدود ۳۰۰ کلمه", activities: ["کتاب‌خوانی تعاملی روزانه.", "بازی 'این چیه؟' با اشیاء واقعی.", "دسته‌بندی اسباب‌بازی‌ها."] }, { level: 36, goal: "افزایش درک مفاهیم پایه (فضایی، کیفی)", activities: ["بازی با لگو و استفاده از دستورات حاوی مفاهیم.", "پیدا کردن اشیاء 'بزرگ' و 'کوچک'.", "دنبال کردن دستورات دو مرحله‌ای."] }] },
+            "semantics-expressive": { ltg: "افزایش گنجینه واژگان بیانی", stgs: [{ level: 24, goal: "افزایش واژگان بیانی به بالای ۵۰-۱۰۰ کلمه", activities: ["گسترش گفته‌های کودک (Expansion).", "ایجاد موقعیت‌های انتخابی.", "آواز خواندن و تکرار کلمات کلیدی."] }, { level: 36, goal: "استفاده از کلمات برای توصیف و پرسش", activities: ["بازی 'من چی می‌بینم؟'.", "تشویق به پرسیدن سوال 'این چیه؟'.", "تعریف کردن کارهای روزمره."] }] },
+            "grammar-expressive": { ltg: "افزایش طول و پیچیدگی دستوری جملات", stgs: [{ level: 24, goal: "ترکیب دو کلمه برای ساخت جملات ساده", activities: ["مدل‌سازی جملات دو کلمه‌ای حین بازی.", "استفاده از کتاب‌های تصویری با جملات ساده.", "ترغیب به ترکیب فاعل و فعل."] }, { level: 36, goal: "استفاده از جملات ۳-۴ کلمه‌ای و صرف اولیه", activities: ["بازی با عروسک‌ها و مدل‌سازی جملات حاوی ضمیر و فعل.", "استفاده از نشانه‌های جمع در بازی."] }] },
+            "phonology-expressive": { ltg: "افزایش وضوح گفتار", stgs: [{ level: 24, goal: "افزایش وضوح به حدود ۵۰٪", activities: ["بازی‌های صداسازی (صدای حیوانات، ماشین).", "تمرکز بر تولید صداهای ابتدایی (پ، ب، م) در کلمات ساده."] }, { level: 36, goal: "افزایش وضوح به بالای ۷۵٪", activities: ["بازی‌های آگاهی واج‌شناختی (قافیه).", "تمرین هدفمند روی الگوهای خطای پرتکرار کودک."] }] },
+            "pragmatics-expressive": { ltg: "بهبود مهارت‌های مکالمه", stgs: [{ level: 30, goal: "حفظ موضوع برای ۱-۲ نوبت", activities: ["بازی‌های نوبتی ساده مانند توپ بازی.", "پاسخ دادن فوری و مرتبط به گفته‌های کودک."] }, { level: 42, goal: "حفظ موضوع و پرسیدن سوال مرتبط", activities: ["بازی‌های نقش‌آفرینی (مغازه‌بازی، تلفن‌بازی).", "خواندن کتاب و پرسیدن سوال در مورد داستان: 'فکر می‌کنی بعدش چی میشه؟'."] }] },
+            "discourse-expressive": { ltg: "بهبود توانایی روایت و داستان‌سرایی", stgs: [{ level: 36, goal: "تعریف تجربیات شخصی به صورت زنجیره‌ای", activities: ["نگاه کردن به آلبوم عکس و صحبت در مورد آن.", "پرسیدن سوال در مورد اتفاقات روز: 'امروز تو پارک چی کار کردی؟'."] }, { level: 48, goal: "تعریف داستان با ساختار ساده", activities: ["بازگویی داستان‌های آشنا از روی تصاویر کتاب.", "شروع یک داستان و خواستن از کودک برای ادامه دادن آن."] }] }
         };
 
         const form = document.getElementById('assessment-form');
         const resultsContainer = document.getElementById('results-container');
+        const promptContainer = document.getElementById('prompt-generator-container');
         const resultsTitle = document.getElementById('results-title');
         const downloadBtn = document.getElementById('download-btn');
+        const chronoAgeInput = document.getElementById('chrono-age');
+        const copyPromptBtn = document.getElementById('copy-prompt-btn');
         let resultsChart = null;
 
         function renderAssessment() {
             const container = document.querySelector('#assessment-container .card-body');
-            let html = '';
+            container.innerHTML = '<p class="text-secondary" style="text-align: center; margin-bottom: 20px;">سوالات زیر به صورت هوشمند بر اساس سن تقویمی وارد شده فیلتر می‌شوند.</p>';
             for (const domainKey in assessmentData) {
                 const domain = assessmentData[domainKey];
-                html += `<div class="assessment-section"><h3>${domain.title}</h3>`;
-                domain.receptive.forEach(q => { html += `<div class="question-group"><label for="${q.id}"><strong>درکی:</strong> ${q.question}</label><select id="${q.id}" name="${q.id}" required>${q.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}</select></div>`; });
-                domain.expressive.forEach(q => { html += `<div class="question-group"><label for="${q.id}"><strong>بیانی:</strong> ${q.question}</label><select id="${q.id}" name="${q.id}" required>${q.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}</select></div>`; });
-                html += `</div>`;
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'assessment-section';
+                sectionDiv.innerHTML = `<h3>${domain.title}</h3>`;
+                domain.receptive.forEach(q => { sectionDiv.appendChild(createQuestionGroup(q, 'درکی')); });
+                domain.expressive.forEach(q => { sectionDiv.appendChild(createQuestionGroup(q, 'بیانی')); });
+                container.appendChild(sectionDiv);
             }
-            container.innerHTML = html;
+            filterAssessmentQuestions();
+        }
+        
+        function createQuestionGroup(q, type) {
+            const minAge = Math.min(...q.options.filter(o => o.value > 0).map(o => o.value));
+            const questionGroup = document.createElement('div');
+            questionGroup.className = 'question-group';
+            questionGroup.dataset.minAge = minAge;
+            questionGroup.innerHTML = `<label for="${q.id}"><strong>${type}:</strong> ${q.question}</label><select id="${q.id}" name="${q.id}" required>${q.options.map(opt => `<option value="${opt.value}" ${opt.value === "" ? "disabled selected" : ""}>${opt.text}</option>`).join('')}</select>`;
+            return questionGroup;
+        }
+
+        function filterAssessmentQuestions() {
+            const chronoAge = parseInt(chronoAgeInput.value, 10);
+            const ceiling = isNaN(chronoAge) || chronoAge <= 0 ? Infinity : chronoAge + AGE_CEILING_BUFFER;
+            document.querySelectorAll('.question-group').forEach(qg => {
+                const minAge = parseInt(qg.dataset.minAge, 10);
+                qg.classList.toggle('hidden', minAge > ceiling);
+            });
         }
 
         function handleFormSubmit(event) {
@@ -218,153 +249,150 @@
             for (const domainKey in assessmentData) {
                 scores[domainKey] = { receptive: 0, expressive: 0 };
                 let recCount = 0, expCount = 0, recSum = 0, expSum = 0;
-                assessmentData[domainKey].receptive.forEach(q => { const val = parseInt(formData.get(q.id), 10); if (val > 0) { recSum += val; recCount++; } });
-                assessmentData[domainKey].expressive.forEach(q => { const val = parseInt(formData.get(q.id), 10); if (val > 0) { expSum += val; expCount++; } });
+                assessmentData[domainKey].receptive.forEach(q => { const val = parseInt(formData.get(q.id), 10); if (!isNaN(val)) { recSum += val; recCount++; } });
+                assessmentData[domainKey].expressive.forEach(q => { const val = parseInt(formData.get(q.id), 10); if (!isNaN(val)) { expSum += val; expCount++; } });
                 scores[domainKey].receptive = recCount > 0 ? Math.round(recSum / recCount) : 0;
                 scores[domainKey].expressive = expCount > 0 ? Math.round(expSum / expCount) : 0;
             }
             
+            const results = { childName, chronoAge, scores };
             resultsTitle.textContent = `پروفایل زبان برای: ${childName}`;
-            renderResultsChart({ chronoAge, scores });
-            generateRecommendations({ chronoAge, scores });
+            renderResultsChart(results);
+            generateRecommendations(results);
+            generateAndDisplayPrompt(results);
             resultsContainer.style.display = 'block';
+            promptContainer.style.display = 'block';
             window.location.hash = "results-container";
         }
 
-        function renderResultsChart(results) {
+        function renderResultsChart(results) { /* Logic from previous phase */
             const ctx = document.getElementById('results-chart').getContext('2d');
             const labels = [];
             const languageAgeData = [];
             for (const domainKey in results.scores) {
                 const domain = results.scores[domainKey];
                 const domainTitle = assessmentData[domainKey].title;
-                labels.push(`درک ${domainTitle}`);
-                languageAgeData.push(domain.receptive);
-                labels.push(`بیان ${domainTitle}`);
-                languageAgeData.push(domain.expressive);
+                labels.push(`درک ${domainTitle}`); languageAgeData.push(domain.receptive);
+                labels.push(`بیان ${domainTitle}`); languageAgeData.push(domain.expressive);
             }
             const chronoAgeData = Array(labels.length).fill(results.chronoAge);
             if (resultsChart) { resultsChart.destroy(); }
-            resultsChart = new Chart(ctx, { /* Chart.js config from previous phase */ 
-                type: 'radar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'سن تقویمی', data: chronoAgeData, borderColor: 'rgba(107, 114, 128, 0.5)', borderWidth: 2, borderDash: [5, 5], fill: false }, { label: 'سن زبانی', data: languageAgeData, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, fill: true }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Vazirmatn', size: 14 } } }, tooltip: { bodyFont: { family: 'Vazirmatn' }, titleFont: { family: 'Vazirmatn' } } }, scales: { r: { pointLabels: { font: { family: 'Vazirmatn', size: 13, weight: '600' } }, ticks: { backdropColor: 'rgba(255, 255, 255, 0.75)', stepSize: 6 } } } }
-            });
+            resultsChart = new Chart(ctx, { type: 'radar', data: { labels: labels, datasets: [{ label: 'سن تقویمی', data: chronoAgeData, borderColor: 'rgba(107, 114, 128, 0.5)', borderWidth: 2, borderDash: [5, 5], fill: false }, { label: 'سن زبانی', data: languageAgeData, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Vazirmatn', size: 10 } } }, tooltip: { bodyFont: { family: 'Vazirmatn' }, titleFont: { family: 'Vazirmatn' } } }, scales: { r: { pointLabels: { font: { family: 'Vazirmatn', size: 10, weight: '600' } }, ticks: { backdropColor: 'rgba(255, 255, 255, 0.75)', stepSize: 6, min: 0 } } } } });
         }
 
-        function generateRecommendations(results) {
+        function generateRecommendations(results) { /* Logic from previous phase */
             const container = document.getElementById('recommendation-accordion');
             container.innerHTML = '';
-            let hasRecommendations = false;
-
+            let priorityAreas = [];
             for (const domainKey in results.scores) {
                 ['receptive', 'expressive'].forEach(type => {
                     const languageAge = results.scores[domainKey][type];
                     const chronoAge = results.chronoAge;
                     const gap = chronoAge - languageAge;
-                    const fullDomainKey = `${domainKey}-${type}`;
-
-                    // Identify priority areas (e.g., gap > 6 months)
-                    if (gap > 6 && recommendationsData[fullDomainKey]) {
-                        hasRecommendations = true;
-                        const recData = recommendationsData[fullDomainKey];
-                        // Find the next appropriate goal based on current language age
-                        const targetStg = recData.stgs.find(stg => languageAge < stg.level);
-                        
+                    if (gap > 6 && languageAge > 0) { priorityAreas.push({ domainKey, type, gap, languageAge }); }
+                });
+            }
+            priorityAreas.sort((a, b) => b.gap - a.gap);
+            if (priorityAreas.length > 0) {
+                priorityAreas.forEach(area => {
+                    const fullDomainKey = `${area.domainKey}-${area.type}`;
+                    const recData = recommendationsData[fullDomainKey];
+                    if (recData) {
+                        const targetStg = recData.stgs.find(stg => area.languageAge < stg.level);
                         if (targetStg) {
                             const recItem = document.createElement('div');
                             recItem.className = 'rec-item';
-                            recItem.innerHTML = `
-                                <div class="rec-header" style="background-color: var(--accent-light);">
-                                    <span><strong>اولویت:</strong> ${assessmentData[domainKey].title} (${type === 'receptive' ? 'درکی' : 'بیانی'})</span>
-                                    <span class="arrow">▼</span>
-                                </div>
-                                <div class="rec-body">
-                                    <h4>هدف بلندمدت (LTG):</h4>
-                                    <p>${recData.ltg}</p>
-                                    <h4>هدف کوتاه‌مدت پیشنهادی (STG):</h4>
-                                    <p>${targetStg.goal}</p>
-                                    <h4>فعالیت‌های پیشنهادی:</h4>
-                                    <ul>${targetStg.activities.map(act => `<li>${act}</li>`).join('')}</ul>
-                                </div>
-                            `;
+                            recItem.innerHTML = `<div class="rec-header" style="background-color: var(--accent-light);"><span><strong>اولویت:</strong> ${assessmentData[area.domainKey].title} (${area.type === 'receptive' ? 'درکی' : 'بیانی'}) - (تاخیر: ${area.gap} ماه)</span><span class="arrow">▼</span></div><div class="rec-body"><h4>هدف بلندمدت (LTG):</h4><p>${recData.ltg}</p><h4>هدف کوتاه‌مدت پیشنهادی (STG):</h4><p>${targetStg.goal}</p><h4>فعالیت‌های پیشنهادی:</h4><ul>${targetStg.activities.map(act => `<li>${act}</li>`).join('')}</ul></div>`;
                             container.appendChild(recItem);
                         }
                     }
                 });
-            }
-            if (!hasRecommendations) {
-                container.innerHTML = '<p style="text-align:center;">بر اساس داده‌های وارد شده، تاخیر قابل توجهی که نیاز به اولویت‌بندی درمانی داشته باشد، مشاهده نشد. عملکرد کودک در محدوده‌ی سنی خود قرار دارد.</p>';
-            }
-            
-            // Add accordion functionality
-            container.querySelectorAll('.rec-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    header.parentElement.classList.toggle('active');
-                });
-            });
+            } else { container.innerHTML = '<p style="text-align:center;">بر اساس داده‌های وارد شده، تاخیر قابل توجهی که نیاز به اولویت‌بندی درمانی داشته باشد، مشاهده نشد.</p>'; }
+            container.querySelectorAll('.rec-header').forEach(header => { header.addEventListener('click', () => { header.parentElement.classList.toggle('active'); }); });
         }
 
-        async function downloadReport() {
+        function generateAndDisplayPrompt(results) {
+            let assessmentSummary = '';
+            for (const domainKey in results.scores) {
+                const domain = results.scores[domainKey];
+                const domainTitle = assessmentData[domainKey].title;
+                const recGap = results.chronoAge - domain.receptive;
+                const expGap = results.chronoAge - domain.expressive;
+                assessmentSummary += `* حوزه ${domainTitle} (درکی): سن زبانی ${domain.receptive} ماه (تاخیر: ${recGap > 0 ? recGap : 0} ماه)\n`;
+                assessmentSummary += `* حوزه ${domainTitle} (بیانی): سن زبانی ${domain.expressive} ماه (تاخیر: ${expGap > 0 ? expGap : 0} ماه)\n`;
+            }
+
+            const prompt = `
+شما یک گفتاردرمانگر (SLP) بسیار باتجربه و متخصص در زمینه اختلالات زبان رشدی (DLD) هستید. وظیفه شما این است که بر اساس داده‌های ارزیابی زیر، یک طرح درمان جامع، مرحله‌بندی شده و قابل فهم برای یک گفتاردرمانگر تازه‌کار یا والدین کودک تهیه کنید.
+
+**داده‌های ارزیابی کودک:**
+- نام کودک: ${results.childName}
+- سن تقویمی: ${results.chronoAge} ماه
+- خلاصه نتایج ارزیابی (سن زبانی محاسبه‌شده برای هر حوزه):
+${assessmentSummary}
+
+**وظیفه شما:**
+لطفاً یک طرح درمان کامل با ساختار زیر ارائه دهید:
+
+1.  **تحلیل کلی پروفایل:**
+    - یک تحلیل کوتاه و کلی از نقاط قوت و ضعف اصلی کودک بر اساس داده‌های بالا ارائه دهید. پروفایل زبان کودک (هموار یا ناهموار) را توصیف کنید.
+
+2.  **اولویت‌های اصلی درمان:**
+    - بر اساس بیشترین میزان تاخیر، ۱ تا ۲ حوزه اصلی که باید در فاز اول درمان مورد توجه قرار گیرند را مشخص کنید.
+
+3.  **طرح درمان مرحله‌بندی شده:**
+    - **فاز اول: ایجاد بنیاد (۴-۶ هفته اول):**
+        - اهداف بلندمدت (LTGs) و کوتاه‌مدت (STGs) مشخص و قابل اندازه‌گیری برای حوزه‌های دارای اولویت تعیین کنید.
+        - برای هر هدف کوتاه‌مدت، حداقل ۳ فعالیت درمانی مبتنی بر بازی، طبیعی و کاربردی پیشنهاد دهید.
+    - **فاز دوم: گسترش مهارت‌ها (۶-۸ هفته بعد):**
+        - اهداف بعدی را بر اساس پیشرفت کودک در فاز اول و هدف قرار دادن سایر حوزه‌های دارای تاخیر تعیین کنید.
+        - فعالیت‌های متناسب با این اهداف جدید را پیشنهاد دهید.
+
+4.  **توصیه‌های عمومی برای والدین:**
+    - چند استراتژی کلیدی و کاربردی که والدین می‌توانند در خانه برای تسهیل رشد زبان کودک به کار گیرند را فهرست کنید.
+
+**نکات مهم:**
+- زبان شما باید کاملاً واضح، ساده و به دور از اصطلاحات پیچیده باشد.
+- تمرکز اصلی بر رویکردهای مبتنی بر بازی و تعاملات طبیعی باشد.
+- طرح درمان باید منطقی، ساختاریافته و دارای یک مسیر پیشرفت مشخص باشد.
+`;
+            document.getElementById('prompt-textarea').value = prompt.trim();
+        }
+        
+        function copyPrompt() {
+            const textarea = document.getElementById('prompt-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            copyPromptBtn.textContent = 'کپی شد!';
+            setTimeout(() => {
+                copyPromptBtn.textContent = 'کپی کردن پرامپت';
+            }, 2000);
+        }
+
+        async function downloadReport() { /* Logic from previous phase */
             const reportElement = document.getElementById('report-to-download');
             const { jsPDF } = window.jspdf;
-            
-            // Temporarily add a white background to ensure non-transparent capture
             reportElement.style.backgroundColor = 'white';
-
-            const canvas = await html2canvas(reportElement, {
-                scale: 2, // Higher scale for better quality
-                useCORS: true,
-                logging: false,
-                onclone: (document) => {
-                    // This is crucial for fonts to render in the captured image
-                    const head = document.head;
-                    const style = document.createElement('style');
-                    style.innerHTML = `
-                        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
-                        body { font-family: 'Vazirmatn', sans-serif !important; }
-                    `;
-                    head.appendChild(style);
-                }
-            });
-            
-            // Revert background color after capture
+            const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true, logging: false });
             reportElement.style.backgroundColor = '';
-
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
             const imgWidth = canvas.width;
             const imgHeight = canvas.height;
             const ratio = imgWidth / imgHeight;
-            const newImgWidth = pdfWidth - 20; // with margin
-            const newImgHeight = newImgWidth / ratio;
-            
-            let heightLeft = newImgHeight;
-            let position = 10; // top margin
-            
-            pdf.addImage(imgData, 'PNG', 10, position, newImgWidth, newImgHeight);
-            heightLeft -= (pdfHeight - 20);
-
-            while (heightLeft > 0) {
-                position = heightLeft - newImgHeight + 10; // top margin for new page
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 10, position, newImgWidth, newImgHeight);
-                heightLeft -= (pdfHeight - 20);
-            }
-            
+            const newImgHeight = (pdfWidth / ratio);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, newImgHeight);
             const childName = document.getElementById('child-name').value || 'report';
             pdf.save(`${childName.replace(/\s/g, '_')}_language_profile.pdf`);
         }
 
         // Initial Render & Event Listeners
         renderAssessment();
+        chronoAgeInput.addEventListener('input', filterAssessmentQuestions);
         form.addEventListener('submit', handleFormSubmit);
         downloadBtn.addEventListener('click', downloadReport);
+        copyPromptBtn.addEventListener('click', copyPrompt);
     });
     </script>
 
